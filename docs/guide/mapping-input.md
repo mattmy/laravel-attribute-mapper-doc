@@ -10,6 +10,23 @@ Call `forModel()` on a `MappingSource` to choose an Eloquent model instance or a
 | `AttributeMapper::from($formRequest)` | The result of `validated()` from a Laravel `FormRequest`. Laravel handles validation and authorization before your controller runs. |
 | `AttributeMapper::fromRequestInput($request, $keys)` | The actual top-level keys you list, read from Laravel's current parsed JSON or form body. |
 
+## Create a model from its class
+
+Pass `Appointment::class` directly when creating a new appointment. Here, `$request` is a validated Form Request with an `endTime` field, and `Appointment` lists `end_time` as fillable.
+
+```php
+use App\Models\Appointment;
+use Mattmy\FillMap\AttributeMapper;
+use Mattmy\FillMap\InputKeyStyle;
+
+$appointment = AttributeMapper::from($request)
+    ->forModel(Appointment::class)
+    ->inputKeys(InputKeyStyle::Camel)
+    ->toModel();
+```
+
+`toModel()` returns a new `Appointment` with `end_time` filled when `endTime` was submitted. Call `$appointment->save()` when you want to insert it.
+
 ## Update from validated input
 
 In this controller example, `$request` is a validated Form Request with `['sometimes', 'nullable', 'date']` for `endTime`. The existing `$appointment` model lists `end_time` as fillable.

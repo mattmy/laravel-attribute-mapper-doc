@@ -10,6 +10,23 @@
 | `AttributeMapper::from($formRequest)` | Laravel `FormRequest` 的 `validated()` 結果。Laravel 會在控制器執行前處理驗證與授權。 |
 | `AttributeMapper::fromRequestInput($request, $keys)` | 從 Laravel 當下已解析的 JSON 或表單請求主體讀取所列的頂層鍵。 |
 
+## 傳入 Model 類別來建立新資料
+
+建立新預約時，可以直接傳入 `Appointment::class`。下例的 `$request` 是已通過驗證的 Form Request，欄位名稱是 `endTime`，而 `Appointment` 將 `end_time` 列為可填屬性。
+
+```php
+use App\Models\Appointment;
+use Mattmy\FillMap\AttributeMapper;
+use Mattmy\FillMap\InputKeyStyle;
+
+$appointment = AttributeMapper::from($request)
+    ->forModel(Appointment::class)
+    ->inputKeys(InputKeyStyle::Camel)
+    ->toModel();
+```
+
+`toModel()` 會回傳新的 `Appointment` 實例。有傳入 `endTime` 時，就會填上 `end_time`。準備好新增資料時，再呼叫 `$appointment->save()`。
+
 ## 使用驗證結果更新資料
 
 在這個控制器範例中，`$request` 是已通過驗證的 Form Request，`endTime` 使用 `['sometimes', 'nullable', 'date']` 規則。既有的 `$appointment` Model 將 `end_time` 列為可填屬性。
