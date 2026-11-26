@@ -1,6 +1,6 @@
 # Mapping input
 
-Call `forModel()` on a `MappingSource` to choose an Eloquent model instance or a class you can create without arguments. You can reuse the same source with different models.
+`from()` and `fromRequestInput()` capture input when you call them and return a `MappingSource`. Use `forModel()` to pass an Eloquent model instance or a class you can instantiate without arguments. You can reuse the same source with different models.
 
 ## Choose a source
 
@@ -8,7 +8,7 @@ Call `forModel()` on a `MappingSource` to choose an Eloquent model instance or a
 | --- | --- |
 | `AttributeMapper::from($array)` | An array keyed by top-level input names, such as the result of `$request->validate($rules)`. |
 | `AttributeMapper::from($formRequest)` | The result of `validated()` from a Laravel `FormRequest`. Laravel handles validation and authorization before your controller runs. |
-| `AttributeMapper::fromRequestInput($request, $keys)` | The actual top-level keys you list, read from Laravel's current parsed JSON or form body. |
+| `AttributeMapper::fromRequestInput($request, $keys)` | The named top-level fields in Laravel's parsed JSON or form body. |
 
 ## Create a model from its class
 
@@ -45,7 +45,7 @@ Omit `endTime` to keep the existing value, or send `{"endTime": null}` to clear 
 
 ## Select fields from the request body
 
-If your application accepts selected unvalidated body fields, list the keys to read. With `{"endTime": "2026-12-01"}` in the body, this example returns `['end_time' => '2026-12-01']`.
+List the fields your app allows you to read from the unvalidated body. With `{"endTime": "2026-12-01"}` in `$request` and `end_time` fillable on `$appointment`, this returns `['end_time' => '2026-12-01']`.
 
 ```php
 use Mattmy\FillMap\AttributeMapper;
@@ -60,7 +60,7 @@ $attributes = AttributeMapper::fromRequestInput($request, ['endTime'])
 - Use exact, case-sensitive body keys. An empty list selects nothing. Duplicate names select each field once.
 - The mapper reads Laravel's parsed JSON or form body, including fields already merged into it. A key found only in the query string, route parameters, cookies, headers, or uploaded files is skipped. If Laravel turns malformed JSON into an empty body, the selection is empty too.
 - Selected values may be `null`, booleans, integers, floats, strings, or finite nested arrays of those values. Nested keys are preserved. Objects, resources, and circular arrays raise an error at selection, even for fields you later filter out.
-- If a selected value contains PHP references, later changes to the referenced variables do not affect the result. Prepared arrays, validated data, and `merge()` retain PHP's usual nested-reference behavior.
+- `fromRequestInput()` copies selected values and breaks top-level and nested PHP references. `from()` and `merge()` keep both kinds of reference. If you change a referenced variable after building the chain, later output from `from()` or `merge()` reflects that change.
 
 To combine validated data with selected body fields, map the body fields first, then pass their mapped attributes to `merge()` on the validated mapping. The merged value wins if both sources target the same attribute. See [Request data limits and authorization](performance-and-safety.md#request-data-and-authorization).
 
@@ -78,7 +78,7 @@ The model's `getFillable()` list limits which attributes you can map or target w
 
 Source keys match exactly, including case and dots. For a fillable JSON path such as `options->enabled`, use the full key with `Exact` or set an alias.
 
-The order is alias, last `inputKeys()` call, then the [application default](configuration-and-errors.md). If two attributes resolve to the same source key, change the style or give one a different alias. A derived key that is empty or becomes an integer in PHP cannot match an input field. Use a valid alias for that attribute.
+An alias takes priority over the last `inputKeys()` setting, which in turn overrides the [application default](configuration-and-errors.md). If two attributes resolve to the same key, change the style or give one a different alias. If a style produces an empty or integer key, set a valid alias to map that attribute.
 
 Naming conversions follow the installed Laravel version. Use `Exact` or an alias when a source key must stay the same across versions.
 
@@ -86,7 +86,7 @@ The mapper skips missing keys and keeps explicit values such as `null`, `false`,
 
 ### Set aliases
 
-Use `aliases()` to set the source key for a particular attribute. The map is **input key → model attribute**. For example, your Form Request validates `expiresAt`, and `$appointment` allows `start_time` and `end_time` in its fillable list.
+Pass aliases as **input key → model attribute** pairs. In this example, the Form Request validates `startTime` and `expiresAt`, and `$appointment` lists `start_time` and `end_time` as fillable.
 
 ```php
 use Mattmy\FillMap\AttributeMapper;

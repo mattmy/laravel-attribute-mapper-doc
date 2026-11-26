@@ -19,7 +19,7 @@ composer require mattmy/laravel-attribute-mapper
 
 ## 設定
 
-預設的 `Exact` 會比對同名欄位。可用 `inputKeys()` 設定單次映射的命名規則，或[發布設定檔](configuration-and-errors.md)來調整應用程式預設值。
+安裝後就能直接使用。預設的 `Exact` 會比對同名欄位。用 `inputKeys()` 可指定單次映射的命名規則。要改應用程式的預設規則，可先[發布設定檔](configuration-and-errors.md)。
 
 ## 快速開始
 
@@ -66,7 +66,7 @@ Route::get('/mapping-example', static function (MappingExampleRequest $request):
 });
 ```
 
-開啟 `/mapping-example?startTime=2026-12-01&endTime=2026-12-02`，就會收到 `{"start_time":"2026-12-01","end_time":"2026-12-02"}`。建立和更新資料的控制器也能用同樣的寫法產生屬性陣列。
+開啟 `/mapping-example?startTime=2026-12-01&endTime=2026-12-02`，就會收到 `{"start_time":"2026-12-01","end_time":"2026-12-02"}`。
 
 ## 下一步
 

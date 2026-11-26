@@ -1,6 +1,6 @@
 # 映射輸入
 
-用 `forModel()` 指定 Eloquent Model 實例，或傳入可不帶參數建立的 Model 類別。同一份來源可對應到不同的 Model。
+`from()` 和 `fromRequestInput()` 在呼叫時就會取值，並回傳 `MappingSource`。用 `forModel()` 傳入 Eloquent Model 實例，或可不帶參數建立的 Model 類別。同一份來源可對應到不同的 Model。
 
 ## 選擇來源
 
@@ -8,7 +8,7 @@
 | --- | --- |
 | `AttributeMapper::from($array)` | 以頂層輸入欄位名稱為鍵的陣列，例如 `$request->validate($rules)` 的結果。 |
 | `AttributeMapper::from($formRequest)` | Laravel `FormRequest` 的 `validated()` 結果。Laravel 會在控制器執行前處理驗證與授權。 |
-| `AttributeMapper::fromRequestInput($request, $keys)` | 從 Laravel 當下已解析的 JSON 或表單請求主體讀取所列的頂層鍵。 |
+| `AttributeMapper::fromRequestInput($request, $keys)` | Laravel 已解析的 JSON 或表單請求主體中，指定的頂層欄位。 |
 
 ## 傳入 Model 類別來建立新資料
 
@@ -45,7 +45,7 @@ $updated = AttributeMapper::from($request)
 
 ## 選取請求主體欄位
 
-如果應用程式允許使用特定的未驗證欄位，請列出要讀取的鍵。請求主體傳入 `{"endTime": "2026-12-01"}` 時，下例會回傳 `['end_time' => '2026-12-01']`。
+列出應用程式允許從未驗證的請求主體讀取的欄位。若 `$request` 的主體包含 `{"endTime": "2026-12-01"}`，且 `$appointment` 將 `end_time` 列為可填屬性，下例會回傳 `['end_time' => '2026-12-01']`。
 
 ```php
 use Mattmy\FillMap\AttributeMapper;
@@ -60,7 +60,7 @@ $attributes = AttributeMapper::fromRequestInput($request, ['endTime'])
 - 請使用實際欄位名稱，並注意大小寫。空清單不會選取任何欄位，重複名稱只會取一次。
 - 套件從 Laravel 已解析的 JSON 或表單主體取值，包含已合併進主體的欄位。若欄位只出現在查詢字串、路由參數、Cookie、標頭或上傳檔案中，就會略過。若 Laravel 將格式錯誤的 JSON 解析為空主體，選取結果也是空的。
 - 可選取 `null`、布林、整數、浮點數、字串，或由這些值組成的有限巢狀陣列。巢狀鍵會原樣保留。入選值若含物件、資源或循環陣列，即使後續會排除，也會在選取時報錯。
-- 選取的值若含有 PHP 參照，之後修改被參照的變數也不會影響結果。準備好的陣列、驗證結果和 `merge()` 補值沿用 PHP 原有的巢狀參照行為。
+- `fromRequestInput()` 複製選取的值，切斷頂層與巢狀 PHP 參照。`from()` 和 `merge()` 會保留這兩種參照，建立映射鏈後若修改被參照的變數，後續輸出會反映新值。
 
 若要合併驗證結果與請求主體欄位，先把選取的主體欄位映射成屬性，再用 `merge()` 補入驗證結果的映射鏈。同一屬性以補入的值為準。另見[請求資料與授權](performance-and-safety.md#請求資料與授權)。
 
@@ -78,7 +78,7 @@ Model 的 `getFillable()` 決定哪些屬性能從來源映射或設為別名目
 
 來源鍵會精確比對，包含大小寫和點號。若可填屬性是 `options->enabled` 這類 JSON 路徑，可用 `Exact` 比對完整鍵，或設定別名。
 
-別名優先，其次是最後一次 `inputKeys()` 設定，最後才用[應用程式預設值](configuration-and-errors.md)。若兩個屬性對應到同一個來源鍵，請更換命名規則，或替其中一個屬性設定不同的別名。命名規則若產生空字串或會被 PHP 轉成整數的鍵，可設定合法的別名來取值。
+別名優先，其次是最後一次 `inputKeys()` 設定，最後才用[應用程式預設規則](configuration-and-errors.md)。若兩個屬性對應到同一個來源鍵，請更換命名規則，或替其中一個屬性設定不同的別名。若命名規則產生空字串或整數鍵，請用合法的別名指定來源鍵。
 
 命名轉換依實際安裝的 Laravel 版本而定。若來源鍵必須跨版本一致，請用 `Exact` 或設定別名。
 
@@ -86,7 +86,7 @@ Model 的 `getFillable()` 決定哪些屬性能從來源映射或設為別名目
 
 ### 設定別名
 
-用 `aliases()` 為個別屬性指定來源鍵，格式是 **輸入鍵 → Model 屬性**。例如，Form Request 驗證的欄位叫 `expiresAt`，而 `$appointment` 的可填屬性有 `start_time` 和 `end_time`。
+用 `aliases()` 傳入 **輸入鍵 → Model 屬性** 的對照。這個範例的 Form Request 驗證 `startTime` 和 `expiresAt`，而 `$appointment` 將 `start_time` 和 `end_time` 列為可填屬性。
 
 ```php
 use Mattmy\FillMap\AttributeMapper;

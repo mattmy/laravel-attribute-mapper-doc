@@ -18,13 +18,13 @@ $attributes = AttributeMapper::from(['endTime' => '2026-12-01'])
     ->toArray();
 ```
 
-The result includes `end_time`, `updated_by`, and `status`. You can add attributes outside the fillable list. If you add the same attribute more than once, its last value wins.
+The result includes `end_time`, `updated_by`, and `status`, even if `updated_by` and `status` are outside the fillable list. If you add the same attribute more than once with `merge()`, `setId()`, or `setUuid()`, the last value wins.
 
 | Method | Values and defaults |
 | --- | --- |
 | `merge($attributes)` | Takes an array keyed by model attribute name. Added values override mapped input. |
 | `setId($value, $attribute)` | Defaults to the `id` attribute. Omit the value or pass `null` to add integer `0`. An explicit value must be a positive PHP integer. Numeric strings, floats, booleans, and explicit `0` are invalid. |
-| `setUuid($value, $attribute)` | Defaults to `uuid`. Omit the value or pass `null` to use Laravel's UUID generator. A valid UUID string stays as given, and a `Ramsey\Uuid\UuidInterface` becomes a string. The same chain reuses its UUID. |
+| `setUuid($value, $attribute)` | Defaults to `uuid`. Omit the value or pass `null` to generate a UUID immediately using Laravel's generator. A valid UUID string stays as given, and a `Ramsey\Uuid\UuidInterface` becomes a string. The chain reuses that value each time you get the result. |
 
 The `attribute` argument sets the destination for `setId()` and `setUuid()`. For example, `setUuid(attribute: 'external_uuid')` generates a UUID for `external_uuid`. Add only [attributes and values your app has authorized](performance-and-safety.md#request-data-and-authorization).
 
@@ -38,7 +38,9 @@ Use exact model attribute names in filters. After mapping and adding values, the
 | `except($attributes)` | Removes the named attributes. Repeated calls accumulate exclusions. An empty list excludes nothing. |
 | `withoutBlank($attributes = null)` | Removes values Laravel treats as blank. Omit the argument or pass `null` to check all attributes. An empty list disables this filter. The last call sets its scope. |
 
-Each method accepts one name or a list of names. `withoutBlank()` follows Laravel's `blank()` helper. It removes `null`, empty or whitespace-only strings, and empty arrays, and keeps `0`, `'0'`, and `false`. To clear an attribute with `null`, leave it out of the `withoutBlank()` scope.
+Each method accepts one name or a list of names. `only()` keeps only names that exist in the result. `except()` and `withoutBlank()` ignore names that are absent.
+
+`withoutBlank()` uses Laravel's `blank()` helper. It removes `null`, empty or whitespace-only strings, and empty arrays while keeping `0`, `'0'`, and `false`. To clear `end_time` with `null`, omit `withoutBlank()` or limit it to other fields. For example, `withoutBlank('notes')` drops blank notes and keeps an explicit `end_time => null`.
 
 ## Get the result
 

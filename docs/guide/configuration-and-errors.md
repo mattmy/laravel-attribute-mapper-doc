@@ -24,7 +24,7 @@ return [
 | --- | --- | --- |
 | `attribute-mapper.input_key_style` | `InputKeyStyle::Exact` | An `InputKeyStyle` case or its case-insensitive name, such as `'camel'` or `'Camel'`. |
 
-Use `inputKeys()` to override the default for one chain. `fromRequestInput()` still takes the exact names in the request body. If you cache config, run `php artisan config:cache` after editing the file.
+With `Camel` as the default, a chain maps `endTime` to `end_time` without an `inputKeys()` call. The output method reads the default unless you set `inputKeys()` on that chain. For `fromRequestInput()`, list the actual body keys, such as `endTime`. If you cache config, run `php artisan config:cache` after editing the file.
 
 ## Valid field names
 

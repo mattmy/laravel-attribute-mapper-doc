@@ -24,7 +24,7 @@ return [
 | --- | --- | --- |
 | `attribute-mapper.input_key_style` | `InputKeyStyle::Exact` | `InputKeyStyle` 的列舉成員，或不分大小寫的名稱字串，例如 `'camel'` 或 `'Camel'`。 |
 
-單一映射鏈可用 `inputKeys()` 覆寫預設值。`fromRequestInput()` 仍須列出請求主體的實際欄位名稱。若有使用設定快取，修改後請重新執行 `php artisan config:cache`。
+預設規則設為 `Camel` 後，省略 `inputKeys()` 也能把 `endTime` 對應到 `end_time`。輸出時才讀取預設規則，鏈上的 `inputKeys()` 設定優先。使用 `fromRequestInput()` 時，請列出主體中的實際鍵名，例如 `endTime`。若有使用設定快取，修改後請重新執行 `php artisan config:cache`。
 
 ## 合法欄位名稱
 

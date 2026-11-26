@@ -19,7 +19,7 @@ composer require mattmy/laravel-attribute-mapper
 
 ## Configuration
 
-The default `Exact` style matches input keys to identical model attribute names. Set a naming style on a mapping with `inputKeys()`, or [publish the configuration](configuration-and-errors.md) to set an application default.
+You can use the package as soon as it’s installed. By default, `Exact` matches input keys to identical model attribute names. Use `inputKeys()` to change the style for one mapping, or [publish the configuration](configuration-and-errors.md) to set your app’s default.
 
 ## Quick start
 
@@ -66,7 +66,7 @@ Route::get('/mapping-example', static function (MappingExampleRequest $request):
 });
 ```
 
-Visit `/mapping-example?startTime=2026-12-01&endTime=2026-12-02` to get `{"start_time":"2026-12-01","end_time":"2026-12-02"}`. Use the same mapping in your create and update controllers to build the attribute array.
+Visit `/mapping-example?startTime=2026-12-01&endTime=2026-12-02` to get `{"start_time":"2026-12-01","end_time":"2026-12-02"}`.
 
 ## Next steps
 
